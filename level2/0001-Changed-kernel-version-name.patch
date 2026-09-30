@@ -1,0 +1,25 @@
+From ef43a21e58c95008a5b1a1877af846b8aef3a796 Mon Sep 17 00:00:00 2001
+From: aascedu <aascedu@student.42lyon.fr>
+Date: Wed, 30 Sep 2026 09:20:28 +0200
+Subject: [PATCH] Changed kernel version name
+
+---
+ Makefile | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/Makefile b/Makefile
+index 6b8b812f2..a52831466 100644
+--- a/Makefile
++++ b/Makefile
+@@ -2,7 +2,7 @@
+ VERSION = 7
+ PATCHLEVEL = 3
+ SUBLEVEL = 0
+-EXTRAVERSION = -rc5
++EXTRAVERSION = -thor_kernel
+ NAME = Baby Opossum Posse
+ 
+ # *DOCUMENTATION*
+-- 
+2.55.0
+
