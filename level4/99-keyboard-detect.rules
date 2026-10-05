@@ -1,0 +1,2 @@
+ACTION=="add", SUBSYSTEM=="input", KERNEL=="event[0-9]*", ENV{ID_BUS}=="usb", ENV{ID_INPUT_KEYBOARD}=="1", RUN+="/sbin/modprobe detect_kbd"
+ACTION=="remove", SUBSYSTEM=="input", KERNEL=="event[0-9]*", ENV{ID_BUS}=="usb", ENV{ID_INPUT_KEYBOARD}=="1", RUN+="/sbin/modprobe -r detect_kbd"
