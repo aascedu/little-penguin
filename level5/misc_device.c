@@ -3,25 +3,37 @@
 #include <linux/init.h>
 #include <linux/miscdevice.h>
 
-static ssize_t ft_misc_write(struct file *file, const char __user *buf,
-               size_t len, loff_t *ppos)
+
+// strace -e write echo -n "aascedu" > /dev/fortytwo
+static ssize_t ft_misc_write(struct file *filp, const char __user *buf,
+               size_t count, loff_t *f_pos)
 {
-    pr_info("ft misc device write\n");
-    
-    /* We are not doing anything with this data now */
-    
-    return len; 
+    char input[32];
+
+    if (count >= sizeof(input))
+        return -EINVAL;
+    if (copy_from_user(input, buf, count))
+        return -EFAULT;
+    input[count] = '\0';
+    if (strcmp(input, "aascedu") == 0)
+        return count;
+    return -EINVAL;
 }
- 
-/*
-** This function will be called when we read the Misc Device file
-*/
+
 static ssize_t ft_misc_read(struct file *filp, char __user *buf,
                     size_t count, loff_t *f_pos)
 {
-    pr_info("ft misc device read\n");
- 
-    return 0;
+    const char msg[] = "aascedu\n";
+    size_t len = sizeof(msg) - 1;
+
+    if (*f_pos >= len)
+        return 0;
+    if (count < len - *f_pos)
+        len = count;
+    if (copy_to_user(buf, msg + *f_pos, len))
+        return -EFAULT;
+    *f_pos += len;
+    return len;
 }
 
 static const struct file_operations fops = {
