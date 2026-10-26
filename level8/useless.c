@@ -12,9 +12,9 @@
 static char str[PAGE_SIZE];
 static char reversed[PAGE_SIZE];
 static size_t   str_len;
-static DEFINE_MUTEX(str_mutex)
+static DEFINE_MUTEX(str_mutex);
 
-ssize_t myfd_read(struct file *fp, char __user *user, size_t size,
+static ssize_t myfd_read(struct file *fp, char __user *user, size_t size,
                     loff_t *offs)
 {
     ssize_t ret;
@@ -30,7 +30,7 @@ ssize_t myfd_read(struct file *fp, char __user *user, size_t size,
 	return ret;
 }
 
-ssize_t myfd_write(struct file *fp, const char __user *user, size_t size,
+static ssize_t myfd_write(struct file *fp, const char __user *user, size_t size,
                     loff_t *offs)
 {
 	size_t count;
@@ -54,8 +54,8 @@ out:
 
 static struct file_operations myfd_fops = {
     .owner = THIS_MODULE,
-    .read = &myfd_read,
-    .write = &myfd_write
+    .read = myfd_read,
+    .write = myfd_write
 };
 
 static struct miscdevice myfd_device = {
@@ -66,13 +66,12 @@ static struct miscdevice myfd_device = {
 
 static int __init myfd_init(void)
 {
-    int retval;
-    retval = misc_register(&(*(&(myfd_device))));
-    return 1;
+    return misc_register(&myfd_device);
 }
 
 static void __exit myfd_cleanup(void)
 {
+	misc_deregister(&myfd_device);
 }
 
 module_init(myfd_init);
