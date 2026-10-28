@@ -4,7 +4,6 @@
 #include <linux/miscdevice.h>
 
 
-// strace -e write echo -n "aascedu" > /dev/fortytwo
 static ssize_t ft_misc_write(struct file *filp, const char __user *buf,
                size_t count, loff_t *f_pos)
 {
@@ -39,10 +38,7 @@ static ssize_t ft_misc_read(struct file *filp, char __user *buf,
 static const struct file_operations fops = {
   .owner = THIS_MODULE,
   .write = ft_misc_write,
-  .read = ft_misc_read,
-  // .open = ft_misc_open,
-  // .close = ft_misc_close,
-  // .llseek = no_llseek,
+  .read = ft_misc_read
 };
 
 struct miscdevice ft_misc_device = {

@@ -3,7 +3,6 @@
 #include <linux/kernel.h>
 #include <linux/init.h> 
 
-// Initialization function (called when the module is loaded)
 static int __init hello_init(void)
 {
   printk(KERN_INFO "Hello, world!\n");
