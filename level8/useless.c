@@ -19,9 +19,11 @@ static ssize_t myfd_read(struct file *fp, char __user *user, size_t size,
 {
     ssize_t ret;
 	size_t i;
+	int err;
 
-	if (mutex_lock_interruptible(&str_mutex))
-		return -ERESTARTSYS;
+	err = mutex_lock_interruptible(&str_mutex);
+	if (err)
+		return err;
 	for (i = 0; i < str_len; i++)
 		reversed[i] = str[str_len - 1 - i];
 	ret = simple_read_from_buffer(user, size, offs,
@@ -35,10 +37,12 @@ static ssize_t myfd_write(struct file *fp, const char __user *user, size_t size,
 {
 	size_t count;
 	ssize_t ret;
+	int err;
 
 	count = min(size, sizeof(str) - 1);
-	if (mutex_lock_interruptible(&str_mutex))
-		return -ERESTARTSYS;
+	err = mutex_lock_interruptible(&str_mutex);
+	if (err)
+		return err;
 	if (copy_from_user(str, user, count)) {
 		ret = -EFAULT;
 		goto out;

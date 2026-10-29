@@ -13,9 +13,9 @@
 
 static struct dentry	*ft_dir;
 
-static char		*foo_buf;
-static size_t		foo_len;
-static DEFINE_MUTEX(foo_lock);
+static char		*_buf;
+static size_t		_len;
+static DEFINE_MUTEX(_lock);
 
 /* ------------------------------------------------------------------ id */
 
@@ -72,11 +72,13 @@ static ssize_t ft_foo_read(struct file *filp, char __user *buf,
 			   size_t count, loff_t *ppos)
 {
 	ssize_t ret;
+	int	err;
 
-	if (mutex_lock_interruptible(&foo_lock))
-		return -ERESTARTSYS;
-	ret = simple_read_from_buffer(buf, count, ppos, foo_buf, foo_len);
-	mutex_unlock(&foo_lock);
+	err = mutex_lock_interruptible(&_lock);
+	if (err)
+		return err;
+	ret = simple_read_from_buffer(buf, count, ppos, _buf, _len);
+	mutex_unlock(&_lock);
 	return ret;
 }
 
@@ -84,26 +86,28 @@ static ssize_t ft_foo_write(struct file *filp, const char __user *buf,
 			    size_t count, loff_t *ppos)
 {
 	ssize_t ret;
+	int err;
 
 	if (*ppos != 0)
 		return -EINVAL;
 	if (count > PAGE_SIZE)
 		count = PAGE_SIZE;
 
-	if (mutex_lock_interruptible(&foo_lock))
-		return -ERESTARTSYS;
+	err = mutex_lock_interruptible(&_lock);
+	if (err)
+		return err;
 
-	memset(foo_buf, 0, PAGE_SIZE);
-	if (copy_from_user(foo_buf, buf, count)) {
-		foo_len = 0;
+	memset(_buf, 0, PAGE_SIZE);
+	if (copy_from_user(_buf, buf, count)) {
+		_len = 0;
 		ret = -EFAULT;
 		goto out;
 	}
-	foo_len = count;
+	_len = count;
 	*ppos = count;
 	ret = count;
 out:
-	mutex_unlock(&foo_lock);
+	mutex_unlock(&_lock);
 	return ret;
 }
 
@@ -120,15 +124,15 @@ static int __init ft_init(void)
 {
 	struct dentry *d;
 
-	foo_buf = kzalloc(PAGE_SIZE, GFP_KERNEL);
-	if (!foo_buf)
+	_buf = kzalloc(PAGE_SIZE, GFP_KERNEL);
+	if (!_buf)
 		return -ENOMEM;
-	foo_len = 0;
+	_len = 0;
 
 	ft_dir = debugfs_create_dir("fortytwo", NULL);
 	if (IS_ERR_OR_NULL(ft_dir)) {
-		kfree(foo_buf);
-		foo_buf = NULL;
+		kfree(_buf);
+		_buf = NULL;
 		return ft_dir ? PTR_ERR(ft_dir) : -ENODEV;
 	}
 
@@ -151,8 +155,8 @@ static int __init ft_init(void)
 err:
 	debugfs_remove(ft_dir);
 	ft_dir = NULL;
-	kfree(foo_buf);
-	foo_buf = NULL;
+	kfree(_buf);
+	_buf = NULL;
 	return -ENODEV;
 }
 
@@ -160,8 +164,8 @@ static void __exit ft_exit(void)
 {
 	debugfs_remove(ft_dir);
 	ft_dir = NULL;
-	kfree(foo_buf);
-	foo_buf = NULL;
+	kfree(_buf);
+	_buf = NULL;
 	pr_info("fortytwo: debugfs entries removed\n");
 }
 
