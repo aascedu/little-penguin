@@ -130,10 +130,10 @@ static int __init ft_init(void)
 	_len = 0;
 
 	ft_dir = debugfs_create_dir("fortytwo", NULL);
-	if (IS_ERR_OR_NULL(ft_dir)) {
+	if (IS_ERR(ft_dir)) {
 		kfree(_buf);
 		_buf = NULL;
-		return ft_dir ? PTR_ERR(ft_dir) : -ENODEV;
+		return PTR_ERR(ft_dir);
 	}
 
 	d = debugfs_create_file("id", 0666, ft_dir, NULL, &ft_id_fops);
