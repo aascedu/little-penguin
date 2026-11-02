@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0
 #include <linux/module.h>
 #include <linux/kernel.h>
 #include <linux/init.h>
@@ -7,7 +8,6 @@
 #include <linux/slab.h>
 #include <linux/mutex.h>
 #include <linux/jiffies.h>
-
 #define FT_LOGIN	"aascedu"
 #define FT_LOGIN_LEN	(sizeof(FT_LOGIN) - 1)
 
@@ -17,13 +17,11 @@ static char		*_buf;
 static size_t		_len;
 static DEFINE_MUTEX(_lock);
 
-/* ------------------------------------------------------------------ id */
-
 static ssize_t ft_id_read(struct file *filp, char __user *buf,
 			  size_t count, loff_t *ppos)
 {
 	return simple_read_from_buffer(buf, count, ppos,
-				       FT_LOGIN "\n", FT_LOGIN_LEN + 1);
+		FT_LOGIN "\n", FT_LOGIN_LEN + 1);
 }
 
 static ssize_t ft_id_write(struct file *filp, const char __user *buf,
@@ -48,8 +46,6 @@ static const struct file_operations ft_id_fops = {
 	.llseek	= default_llseek,
 };
 
-/* ------------------------------------------------------------- jiffies */
-
 static ssize_t ft_jiffies_read(struct file *filp, char __user *buf,
 			       size_t count, loff_t *ppos)
 {
@@ -65,8 +61,6 @@ static const struct file_operations ft_jiffies_fops = {
 	.read	= ft_jiffies_read,
 	.llseek	= default_llseek,
 };
-
-/* ----------------------------------------------------------------- foo */
 
 static ssize_t ft_foo_read(struct file *filp, char __user *buf,
 			   size_t count, loff_t *ppos)
@@ -92,11 +86,9 @@ static ssize_t ft_foo_write(struct file *filp, const char __user *buf,
 		return -EINVAL;
 	if (count > PAGE_SIZE)
 		count = PAGE_SIZE;
-
 	err = mutex_lock_interruptible(&_lock);
 	if (err)
 		return err;
-
 	memset(_buf, 0, PAGE_SIZE);
 	if (copy_from_user(_buf, buf, count)) {
 		_len = 0;
@@ -118,8 +110,6 @@ static const struct file_operations ft_foo_fops = {
 	.llseek	= default_llseek,
 };
 
-/* ------------------------------------------------------- init / exit */
-
 static int __init ft_init(void)
 {
 	struct dentry *d;
@@ -128,30 +118,24 @@ static int __init ft_init(void)
 	if (!_buf)
 		return -ENOMEM;
 	_len = 0;
-
 	ft_dir = debugfs_create_dir("fortytwo", NULL);
 	if (IS_ERR(ft_dir)) {
 		kfree(_buf);
 		_buf = NULL;
 		return PTR_ERR(ft_dir);
 	}
-
-	d = debugfs_create_file("id", 0666, ft_dir, NULL, &ft_id_fops);
+	d = debugfs_create_file("id", 0644, ft_dir, NULL, &ft_id_fops);
 	if (IS_ERR_OR_NULL(d))
 		goto err;
-
 	d = debugfs_create_file("jiffies", 0444, ft_dir, NULL,
 				&ft_jiffies_fops);
 	if (IS_ERR_OR_NULL(d))
 		goto err;
-
 	d = debugfs_create_file("foo", 0644, ft_dir, NULL, &ft_foo_fops);
 	if (IS_ERR_OR_NULL(d))
 		goto err;
-
 	pr_info("fortytwo: debugfs entries created\n");
 	return 0;
-
 err:
 	debugfs_remove(ft_dir);
 	ft_dir = NULL;

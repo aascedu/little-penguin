@@ -1,23 +1,21 @@
+// SPDX-License-Identifier: GPL-2.0
 #include <linux/module.h>
 #include <linux/kernel.h>
 #include <linux/init.h>
 #include <linux/miscdevice.h>
 #include <linux/fs.h>
 #include <linux/slab.h>
-
-
 #define DEVICE_NAME "reverse"
 
-
-static char str[PAGE_SIZE];
-static char reversed[PAGE_SIZE];
-static size_t   str_len;
+static char	str[PAGE_SIZE];
+static char	reversed[PAGE_SIZE];
+static size_t	str_len;
 static DEFINE_MUTEX(str_mutex);
 
 static ssize_t myfd_read(struct file *fp, char __user *user, size_t size,
-                    loff_t *offs)
+			 loff_t *offs)
 {
-    ssize_t ret;
+	ssize_t ret;
 	size_t i;
 	int err;
 
@@ -33,7 +31,7 @@ static ssize_t myfd_read(struct file *fp, char __user *user, size_t size,
 }
 
 static ssize_t myfd_write(struct file *fp, const char __user *user, size_t size,
-                    loff_t *offs)
+			  loff_t *offs)
 {
 	size_t count;
 	ssize_t ret;
@@ -56,21 +54,21 @@ out:
 	return ret;
 }
 
-static struct file_operations myfd_fops = {
-    .owner = THIS_MODULE,
-    .read = myfd_read,
-    .write = myfd_write
+static const struct file_operations myfd_fops = {
+	.owner = THIS_MODULE,
+	.read = myfd_read,
+	.write = myfd_write
 };
 
-static struct miscdevice myfd_device = {
-    .minor = MISC_DYNAMIC_MINOR,
-    .name = DEVICE_NAME,
-    .fops = &myfd_fops
+static const struct miscdevice myfd_device = {
+	.minor = MISC_DYNAMIC_MINOR,
+	.name = DEVICE_NAME,
+	.fops = &myfd_fops
 };
 
 static int __init myfd_init(void)
 {
-    return misc_register(&myfd_device);
+	return misc_register(&myfd_device);
 }
 
 static void __exit myfd_cleanup(void)

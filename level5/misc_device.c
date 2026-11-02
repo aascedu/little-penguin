@@ -1,68 +1,69 @@
+// SPDX-License-Identifier: GPL-2.0
 #include <linux/module.h>
 #include <linux/kernel.h>
 #include <linux/init.h>
 #include <linux/miscdevice.h>
 
-
 static ssize_t ft_misc_write(struct file *filp, const char __user *buf,
-               size_t count, loff_t *f_pos)
+			     size_t count, loff_t *f_pos)
 {
-    char input[32];
+	char input[32];
 
-    if (count >= sizeof(input))
-        return -EINVAL;
-    if (copy_from_user(input, buf, count))
-        return -EFAULT;
-    input[count] = '\0';
-    if (strcmp(input, "aascedu") == 0)
-        return count;
-    return -EINVAL;
+	if (count >= sizeof(input))
+		return -EINVAL;
+	if (copy_from_user(input, buf, count))
+		return -EFAULT;
+	input[count] = '\0';
+	if (strcmp(input, "aascedu") == 0)
+		return count;
+	return -EINVAL;
 }
 
 static ssize_t ft_misc_read(struct file *filp, char __user *buf,
-                    size_t count, loff_t *f_pos)
+			    size_t count, loff_t *f_pos)
 {
-    const char msg[] = "aascedu\n";
-    size_t len = sizeof(msg) - 1;
+	static const char msg[] = "aascedu\n";
+	size_t len = sizeof(msg) - 1;
 
-    if (*f_pos >= len)
-        return 0;
-    if (count < len - *f_pos)
-        len = count;
-    if (copy_to_user(buf, msg + *f_pos, len))
-        return -EFAULT;
-    *f_pos += len;
-    return len;
+	if (*f_pos >= len)
+		return 0;
+	if (count < len - *f_pos)
+		len = count;
+	if (copy_to_user(buf, msg + *f_pos, len))
+		return -EFAULT;
+	*f_pos += len;
+	return len;
 }
 
 static const struct file_operations fops = {
-  .owner = THIS_MODULE,
-  .write = ft_misc_write,
-  .read = ft_misc_read
+	.owner = THIS_MODULE,
+	.write = ft_misc_write,
+	.read = ft_misc_read
 };
 
 struct miscdevice ft_misc_device = {
-  .minor = MISC_DYNAMIC_MINOR,
-  .name = "fortytwo",
-  .fops = &fops,
+	.minor = MISC_DYNAMIC_MINOR,
+	.name = "fortytwo",
+	.fops = &fops,
 };
 
 static int __init misc_init(void)
 {
-  int error;
+	int error;
 
-  error = misc_register(&ft_misc_device);
-  if (error) {
-    pr_err("misc_register failed!\n");
-  }
-  pr_info("misc_register init done!\n");
-  return 0;
+	error = misc_register(&ft_misc_device);
+	if (error) {
+		pr_err("misc_register failed!\n");
+		return error;
+	}
+	pr_info("misc_register init done!\n");
+	return 0;
 }
 
 static void __exit misc_exit(void)
 {
-  misc_deregister(&ft_misc_device);
-  pr_info("misc_register exit done!\n");
+	misc_deregister(&ft_misc_device);
+	pr_info("misc_register exit done!\n");
 }
 
 module_init(misc_init);

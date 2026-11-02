@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0
 #include <linux/module.h>
 #include <linux/kernel.h>
 #include <linux/init.h>
@@ -10,7 +11,6 @@
 #define PROC_NAME "mymounts"
 
 static struct proc_dir_entry *mymounts_entry;
-
 
 static int mymounts_show(struct seq_file *m, void *v)
 {
@@ -29,13 +29,13 @@ static int mymounts_show(struct seq_file *m, void *v)
 	for (node = rb_first(&ns->mounts); node; node = rb_next(node)) {
 		mnt = rb_entry(node, struct mount, mnt_node);
 		path.mnt = &mnt->mnt;
-        	path.dentry = mnt->mnt.mnt_root;
-        	pathname = d_path(&path, buf, PAGE_SIZE);
-        	if (IS_ERR(pathname))
-            		continue;
-			if (mnt->mnt_devname)
-				devname = mnt->mnt_devname;
-        	seq_printf(m, "%s %s\n", devname, pathname);
+		path.dentry = mnt->mnt.mnt_root;
+		pathname = d_path(&path, buf, PAGE_SIZE);
+		if (IS_ERR(pathname))
+			continue;
+		if (mnt->mnt_devname)
+			devname = mnt->mnt_devname;
+		seq_printf(m, "%s %s\n", devname, pathname);
 	}
 	return 0;
 }
@@ -54,13 +54,10 @@ static const struct proc_ops mymounts_ops = {
 
 static int __init mymounts_init(void)
 {
-	mymounts_entry = proc_create(
-		PROC_NAME, 0444, NULL, &mymounts_ops
-    );
-    if (!mymounts_entry)
-	return -ENOMEM;
-
-return 0;
+	mymounts_entry = proc_create(PROC_NAME, 0444, NULL, &mymounts_ops);
+	if (!mymounts_entry)
+		return -ENOMEM;
+	return 0;
 }
 
 static void __exit mymounts_exit(void)
