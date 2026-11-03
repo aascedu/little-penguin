@@ -20,13 +20,14 @@ static int mymounts_show(struct seq_file *m, void *v)
 	struct path path;
 	char *buf;
 	char *pathname;
-	const char *devname = "unknown";
+	const char *devname;
 
 	ns = current->nsproxy->mnt_ns;
 	buf = (char *)__get_free_page(GFP_KERNEL);
 	if (!buf)
 		return -ENOMEM;
 	for (node = rb_first(&ns->mounts); node; node = rb_next(node)) {
+		devname = "";
 		mnt = rb_entry(node, struct mount, mnt_node);
 		path.mnt = &mnt->mnt;
 		path.dentry = mnt->mnt.mnt_root;
@@ -37,6 +38,7 @@ static int mymounts_show(struct seq_file *m, void *v)
 			devname = mnt->mnt_devname;
 		seq_printf(m, "%s %s\n", devname, pathname);
 	}
+	free_page((unsigned long)buf);
 	return 0;
 }
 
