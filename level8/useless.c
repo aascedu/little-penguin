@@ -60,7 +60,7 @@ static const struct file_operations myfd_fops = {
 	.write = myfd_write
 };
 
-static const struct miscdevice myfd_device = {
+static struct miscdevice myfd_device = {
 	.minor = MISC_DYNAMIC_MINOR,
 	.name = DEVICE_NAME,
 	.fops = &myfd_fops
